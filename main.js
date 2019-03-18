@@ -3,6 +3,8 @@
  */
 window.onload = function(){
     setupVis1();
+    setupVis2();
+    setupVis3();
 };
 
 /**
@@ -43,7 +45,7 @@ var SpiralPlot = function(){
             .attr("height", this.height + this.margin.left + this.margin.right)
             .append("g")
             .attr('id', "g-vis")
-            .attr("transform", "translate(" + 500 + "," + 450 +")");
+            .attr("transform", "translate(" + 500 + "," + 470 +")");
 
         this.r = d3.min([this.width, this.height])/2-this.minRadius;
 
@@ -75,19 +77,9 @@ var SpiralPlot = function(){
             }))
             .range([0,spiralLength]);
 
-        console.log("min: " + d3.min(this.data, function(d){
-            if(d['Mean years of schooling'] !== "")
-                return +d['Mean years of schooling'];
-        }));
-        console.log("max: " + d3.max(this.data, function(d){
-            return +d['Mean years of schooling'];
-        }));
-
         var yScale = d3.scaleLinear()
-            .domain([0,d3.max(this.data, function(d){
-                return +d['Mean years of schooling'];
-            })])
-            .range([2, 50]);
+            .domain([0,15])
+            .range([2, 70]);
 
         var colorScale = d3.scaleQuantize()
             .domain([d3.min(this.data, function(d){
@@ -159,6 +151,18 @@ var SpiralPlot = function(){
                 }
                 else return (d['Literacy rate(%)'] + "%");
             })
+            .attr("font-weight", function(d){
+                if(d.labelFlg === true){
+                    return "bold";
+                }
+                else return "normal";
+            })
+            .attr("font-size", function(d){
+                if(d.labelFlg === true){
+                    return "14px";
+                }
+                else return "10px";
+            })
             // place text along spiral
             .attr("xlink:href", "#spiral")
             .style("fill", "dark-grey")
@@ -176,12 +180,13 @@ var SpiralPlot = function(){
             max_val = d3.max(this.data, function(d){
             return +d['Share of education in governmental expenditure (%)'];
         });
+
         for(let i=0; i<9; i++){
             legend1.push({
                 value: i,
                 pos: [x0, y0+i*30],
-                t: (i * (max_val - min_val)/10).toFixed(2) + "~" +
-                    ((i+1) * (max_val - min_val)/10).toFixed(2)
+                t: Math.round(i * (max_val - min_val)/9)+ "~" +
+                    Math.round((i+1) * (max_val - min_val)/9)
             });
         }
         legend1.push({value:-1, pos:[x0, y0+270], t:"Not Available"});
@@ -205,7 +210,6 @@ var SpiralPlot = function(){
             .attr("height", 20)
             .attr("width", 30)
             .style("fill", function(d){
-                console.log(d.value + ": " + colorbrewer.PuBuGn[9][d.value])
                 if(d.value === -1){
                     return "#666666";
                 }
@@ -226,27 +230,77 @@ var SpiralPlot = function(){
                 return d.pos[1] + 15;
             })
             .text(function(d){
-                return d.t;
+                return d.t + " %";
             });
 
         d3.select('.legend1')
             .append("text")
-            .attr("x", x0-5)
+            .attr("x", x0-20)
             .attr("y", y0-40)
-            .text("Share of education in");
+            .text("Share of education in")
+            .attr("font-weight", "bold");
         d3.select('.legend1')
             .append("text")
-            .attr("x", x0-5)
+            .attr("x", x0-20)
             .attr("y", y0-20)
-            .text("government expenditure");
+            .text("government expenditure")
+            .attr("font-weight", "bold");
+
+        var yAxis = d3.axisLeft(yScale)
+            .tickValues([0, 5, 10, 15]);
+
+        var legend2 = d3.select("#v11_svg")
+            .append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(" + 505 + "," + 57 +")")
+            .style("dominant-baseline", "central")
+            .call(yAxis);
+
+        legend2.select("path").attr("marker-end", "url(#arrowhead)");
+
+        d3.select("#v11_svg")
+            .append("g")
+            .attr("id", "#legend2-text")
+            .attr("transform", "translate(" + 500 + "," + 450 +")");
+        var x1 = -20,
+            y1 = y0-150;
+        d3.select('.legend1')
+            .append("text")
+            .attr("x", x1)
+            .attr("y", y1)
+            .text("Mean year of schooling (years)")
+            .attr("font-weight", "bold");
+        d3.select('.legend1')
+            .append("text")
+            .attr("x", x1-77)
+            .attr("y", y1 + 81)
+            .style("font-size", 12)
+            .text("Not Available");
+        d3.select('.legend1')
+            .append("text")
+            .attr("x", x1-5)
+            .attr("y", y1 + 59)
+            .style("font-size", 12)
+            .text("5");
+        d3.select('.legend1')
+            .append("text")
+            .attr("x", x1-5)
+            .attr("y", y1 + 37)
+            .style("font-size", 12)
+            .text("10");
+        d3.select('.legend1')
+            .append("text")
+            .attr("x", x1-5)
+            .attr("y", y1 + 15)
+            .style("font-size", 12)
+            .text("15");
+
 
 
         // Interaction
         var popUp = d3.select("#div_visuals")
             .append('div')
             .attr('class', 'tooltip');
-        popUp.append('div')
-            .attr('class','dx');
         popUp.append('div')
             .attr('class','country');
         popUp.append('div')
@@ -259,11 +313,12 @@ var SpiralPlot = function(){
         d3.select("#g-vis")
             .selectAll("rect")
             .on('mouseover', function(d){
-                popUp.select('.dx').html("Country/Region: <b>" + d.x + "</b>");
                 popUp.select('.country').html("Country/Region: <b>" + d['Country/Region'] + "</b>");
                 popUp.select('.literacy').html("Literacy rate: <b>" + d['Literacy rate(%)'] + "%</b>");
-                popUp.select('.schooling').html("Mean Year of Schooling: <b>" + d['Mean years of schooling'] + "years</b>");
-                popUp.select('.expenditure').html("Share of education in governmental expenditure: <b>" + d['Share of education in governmental expenditure (%)'] + "%</b>");
+                if(d['Mean years of schooling'] === "") popUp.select('.schooling').html("Mean Year of Schooling: <b>Not Available</b>");
+                else popUp.select('.schooling').html("Mean Year of Schooling: <b>" + d['Mean years of schooling'] + " years</b>");
+                if(d['Share of education in governmental expenditure (%)'] === "")popUp.select('.expenditure').html("Share of education in governmental expenditure: <b>Not Available</b>");
+                else popUp.select('.expenditure').html("Share of education in governmental expenditure: <b>" + d['Share of education in governmental expenditure (%)'] + "%</b>");
 
                 d3.select(this)
                     .style("fill", "#FFFFFF")
@@ -311,7 +366,12 @@ function loadData(path) {
     })
 }
 
-
 function setupVis2() {
+
+}
+
+
+
+function setupVis3() {
 
 }

@@ -107,31 +107,11 @@ button:focus {
     margin: 10px auto;
 }
 
-#vis5 {
-    background: white;
-    border: 1px solid lightgrey;
-    display: block;
-    width: 90%;
-    height: 100%;
-    min-width: 800px;
-    min-height: 300px;
-    box-sizing: border-box;
-    margin: 10px auto;
-    padding: 25px;
-}
-
-#vis5 div {
-    width: 60px;
-    height: 60px;
-    float: left;
-    margin: 1px;
-}
-
 .axis path,
 .axis line {
     fill: none;
     stroke: #000;
-    shape-rendering: crispEdges;
+    /*shape-rendering: crispEdges;*/
 }
 
 .x.axis path {
