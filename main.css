@@ -134,7 +134,6 @@ button:focus {
 }
 
 .tooltip {
-    background: #eee;
     box-shadow: 0 0 5px #999999;
     color: #333;
     font-size: 12px;
